@@ -37,12 +37,14 @@
                     <h2>Quick Question</h2>
                     <p>Please answer to continue watching</p>
                 </div>
-                <div class="iframe-container">
-                    <iframe id="formFrame" src="" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+                <div id="ratingContainer" class="rating-container"></div>
+                <div class="question-container">
+                    <p id="questionText" class="question-text">Please answer this question:</p>
+                    <textarea id="answerInput" class="question-input" rows="4" placeholder="Type your answer here..."></textarea>
                 </div>
-                <p class="form-reminder">Please submit the form above before continuing the video.</p>
-                <button id="continueBtn" class="primary-btn">
-                    <span>Continue Video</span>
+                <p class="form-reminder">Your answer will be submitted securely. After submitting, the video will continue.</p>
+                <button id="submitAnswerBtn" class="primary-btn">
+                    <span>Submit Answer &amp; Continue</span>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"
                             stroke-linecap="round" stroke-linejoin="round" />

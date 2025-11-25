@@ -11,13 +11,16 @@ let currentCheckpointIndex = 0;
 let timeCheckInterval;
 let duration = 0;
 const formOverlay = document.getElementById('formOverlay');
-const formFrame = document.getElementById('formFrame');
-const continueBtn = document.getElementById('continueBtn');
 const body = document.body;
 const timelineTrack = document.getElementById('timelineTrack');
 const timelineProgress = document.getElementById('timelineProgress');
 const timelineWatchedLabel = document.getElementById('timelineWatchedLabel');
 const timelineQuestionsLabel = document.getElementById('timelineQuestionsLabel');
+const ratingContainer = document.getElementById('ratingContainer');
+const questionTextEl = document.getElementById('questionText');
+const answerInputEl = document.getElementById('answerInput');
+const submitAnswerBtn = document.getElementById('submitAnswerBtn');
+const GETFORM_ENDPOINT = 'https://getform.io/f/apjzdpoa';
 let timelineMarkers = [];
 
 if (timelineTrack) {
@@ -126,8 +129,70 @@ function triggerCheckpoint(checkpoint, index) {
         updateTimelineLabels(player.getCurrentTime());
     }
 
-    // Load Form
-    formFrame.src = checkpoint.formUrl;
+    // Clear and set question UI based on checkpoint type
+    if (answerInputEl) {
+        answerInputEl.value = '';
+    }
+
+    // Default: hide rating container
+    if (ratingContainer) {
+        ratingContainer.innerHTML = '';
+    }
+
+    if (checkpoint.type === 'rating_block' && ratingContainer) {
+        // Build a small table-like layout with rating options
+        const title = document.createElement('h3');
+        title.className = 'rating-title';
+        title.textContent = checkpoint.title || '';
+        ratingContainer.appendChild(title);
+
+        if (checkpoint.description) {
+            const desc = document.createElement('p');
+            desc.className = 'rating-description';
+            desc.textContent = checkpoint.description;
+            ratingContainer.appendChild(desc);
+        }
+
+        const headerRow = document.createElement('div');
+        headerRow.className = 'rating-row rating-header-row';
+        headerRow.innerHTML = '<span class="rating-label"></span><span class="rating-option">Would not use</span><span class="rating-option">Neutral</span><span class="rating-option">Love it</span>';
+        ratingContainer.appendChild(headerRow);
+
+        if (Array.isArray(checkpoint.features)) {
+            checkpoint.features.forEach(feature => {
+                const row = document.createElement('div');
+                row.className = 'rating-row';
+
+                const safeId = String(feature.id || '').replace(/[^a-zA-Z0-9_-]/g, '_');
+                const name = `rating_${checkpoint.id || 'block'}_${safeId}`;
+
+                row.innerHTML = `
+                    <span class="rating-label">${feature.label || ''}</span>
+                    <label class="rating-option"><input type="radio" name="${name}" value="would_not_use">Would not use</label>
+                    <label class="rating-option"><input type="radio" name="${name}" value="neutral">Neutral</label>
+                    <label class="rating-option"><input type="radio" name="${name}" value="love_it">Love it</label>
+                `;
+
+                ratingContainer.appendChild(row);
+            });
+        }
+
+        if (questionTextEl) {
+            questionTextEl.textContent = checkpoint.freeTextLabel || 'Any other thoughts about this category?';
+        }
+    } else {
+        // Simple text question
+        if (questionTextEl) {
+            questionTextEl.textContent = checkpoint.question || 'Please answer this question:';
+        }
+    }
+
+    // Store context on the submit button
+    if (submitAnswerBtn) {
+        submitAnswerBtn.dataset.questionId = checkpoint.id || `q${index + 1}`;
+        submitAnswerBtn.dataset.checkpointIndex = index;
+        submitAnswerBtn.dataset.videoTime = player && player.getCurrentTime ? String(player.getCurrentTime()) : '0';
+    }
 
     // Show Overlay
     formOverlay.classList.remove('hidden');
@@ -216,19 +281,57 @@ function formatTime(seconds) {
     return mins + ':' + (secs < 10 ? '0' + secs : secs);
 }
 
-// Continue Button Logic
-continueBtn.addEventListener('click', () => {
-    const confirmed = window.confirm('Did you submit the form?');
-    if (!confirmed) {
-        return;
-    }
+// Submit Answer Button Logic
+if (submitAnswerBtn && answerInputEl) {
+    submitAnswerBtn.addEventListener('click', async () => {
+        const answer = answerInputEl.value.trim();
 
-    // Hide Overlay
-    formOverlay.classList.add('hidden');
-    body.classList.remove('form-active');
+        const questionId = submitAnswerBtn.dataset.questionId || '';
+        const checkpointIndex = submitAnswerBtn.dataset.checkpointIndex || '';
+        const videoTime = submitAnswerBtn.dataset.videoTime || '';
 
-    // Resume Video
-    if (player && player.playVideo) {
-        player.playVideo();
-    }
-});
+        const formData = new FormData();
+        formData.append('question_id', questionId);
+        formData.append('answer', answer);
+        formData.append('checkpoint_index', checkpointIndex);
+        formData.append('video_time', videoTime);
+
+        // Collect rating values if present
+        if (ratingContainer) {
+            const ratingInputs = ratingContainer.querySelectorAll('input[type="radio"]');
+            const seenNames = new Set();
+            ratingInputs.forEach(input => {
+                if (!input.name || seenNames.has(input.name)) return;
+                seenNames.add(input.name);
+                const selected = ratingContainer.querySelector(`input[name="${input.name}"]:checked`);
+                if (selected) {
+                    formData.append(input.name, selected.value);
+                }
+            });
+        }
+
+        if (!window._sessionId) {
+            window._sessionId = Math.random().toString(36).slice(2);
+        }
+        formData.append('session_id', window._sessionId);
+
+        try {
+            await fetch(GETFORM_ENDPOINT, {
+                method: 'POST',
+                body: formData
+            });
+
+            // Hide Overlay
+            formOverlay.classList.add('hidden');
+            body.classList.remove('form-active');
+
+            // Resume Video
+            if (player && player.playVideo) {
+                player.playVideo();
+            }
+        } catch (e) {
+            console.error('Error submitting answer to Getform', e);
+            alert('There was a problem submitting your answer. Please try again.');
+        }
+    });
+}
