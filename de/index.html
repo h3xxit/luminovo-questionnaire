@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Video-Formular-Erlebnis</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <main class="video-section">
+            <div class="video-inner">
+                <p class="video-instruction">Bitte schauen Sie sich das Video auf dieser Website an und beantworten Sie die Fragen, die erscheinen</p>
+                <div class="video-wrapper">
+                    <div id="player"></div>
+                </div>
+                <div class="timeline-container">
+                    <div class="timeline-track" id="timelineTrack">
+                        <div class="timeline-progress" id="timelineProgress"></div>
+                    </div>
+                    <div class="timeline-labels">
+                        <span id="timelineWatchedLabel">Angesehen: 0:00</span>
+                        <span id="timelineQuestionsLabel">Fragen: 0 / 0</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <aside id="formOverlay" class="form-overlay hidden">
+            <div class="glass-panel">
+                <div class="form-header">
+                    <h2>Kurze Frage</h2>
+                    <p>Bitte antworten Sie, um weiterzuschauen</p>
+                </div>
+                <div id="ratingContainer" class="rating-container"></div>
+                <div class="question-container">
+                    <p id="questionText" class="question-text">Bitte beantworten Sie diese Frage:</p>
+                    <textarea id="answerInput" class="question-input" rows="4" placeholder="Geben Sie hier Ihre Antwort ein..."></textarea>
+                </div>
+                <p class="form-reminder">Ihre Antwort wird sicher übermittelt. Nach dem Absenden wird das Video fortgesetzt.</p>
+                <button id="submitAnswerBtn" class="primary-btn">
+                    <span>Antwort absenden &amp; fortfahren</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+            </div>
+        </aside>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
