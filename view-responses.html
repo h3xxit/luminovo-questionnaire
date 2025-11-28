@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Responses</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .response-item {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .response-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        .session-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .answer-item {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .question-text {
+            color: var(--accent-color);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .answer-text {
+            color: var(--text-color);
+        }
+        
+        .timestamp {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="text-align: center; padding: 40px 0;">
+            <h1 style="color: var(--accent-color); margin-bottom: 8px;">📊 Form Responses</h1>
+            <p style="opacity: 0.8;">View all responses submitted to your forms</p>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="color: var(--accent-color); font-weight: 600;">Form ID:</label>
+            <input type="text" id="formIdInput" placeholder="Enter form ID to view responses" 
+                   style="width: 300px; padding: 8px 12px; margin: 0 8px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--glass-border); border-radius: 4px; color: var(--text-color);">
+            <button onclick="loadResponses()" style="padding: 8px 16px; background: var(--accent-color); color: white; border: none; border-radius: 4px; cursor: pointer;">Load Responses</button>
+        </div>
+
+        <div id="responsesContainer">
+            <div style="text-align: center; padding: 40px; opacity: 0.6;">
+                Enter a form ID above to view responses
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadResponses() {
+            const formId = document.getElementById('formIdInput').value.trim();
+            if (!formId) {
+                alert('Please enter a form ID');
+                return;
+            }
+
+            const container = document.getElementById('responsesContainer');
+            container.innerHTML = '<div style="text-align: center; padding: 40px;">Loading responses...</div>';
+
+            try {
+                const response = await fetch(`/api/responses/form/${formId}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error || 'Failed to load responses');
+                }
+
+                const responses = data.responses || [];
+                
+                if (responses.length === 0) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; opacity: 0.6;">No responses found for this form</div>';
+                    return;
+                }
+
+                container.innerHTML = `
+                    <div style="margin-bottom: 20px; text-align: center;">
+                        <h3 style="color: var(--accent-color);">Found ${responses.length} response${responses.length !== 1 ? 's' : ''}</h3>
+                    </div>
+                    ${responses.map(response => `
+                        <div class="response-item">
+                            <div class="response-header">
+                                <div>
+                                    <strong>Session: ${response.session_id.substring(0, 8)}...</strong>
+                                </div>
+                                <div class="session-info">
+                                    ${new Date(response.created_at).toLocaleString()}
+                                </div>
+                            </div>
+                            <div>
+                                ${response.answers.map(answer => `
+                                    <div class="answer-item">
+                                        <div class="question-text">
+                                            ${answer.questions?.question_data?.question || 'Question'}
+                                            <span style="color: var(--accent-color); font-size: 0.8rem; margin-left: 8px;">
+                                                (${formatTime(answer.questions?.timestamp_seconds || 0)})
+                                            </span>
+                                        </div>
+                                        <div class="answer-text">${answer.answer_data.answer || 'No answer'}</div>
+                                        <div class="timestamp">
+                                            Answered at video time: ${formatTime(answer.video_timestamp || 0)}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+
+            } catch (error) {
+                console.error('Error loading responses:', error);
+                container.innerHTML = `<div style="text-align: center; padding: 40px; color: #ef4444;">Error: ${error.message}</div>`;
+            }
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Auto-load if form ID is in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const formId = urlParams.get('form');
+        if (formId) {
+            document.getElementById('formIdInput').value = formId;
+            loadResponses();
+        }
+    </script>
+</body>
+</html>

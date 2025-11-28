@@ -7,12 +7,13 @@ const path = require('path');
 
 const app = express();
 
-// Security middleware - configured to work with embedded YouTube
+// Security middleware - configured to work with embedded YouTube and inline scripts
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://www.youtube.com", "https://s.ytimg.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.youtube.com", "https://s.ytimg.com"],
+      scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
       frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com"],
       imgSrc: ["'self'", "data:", "https:"],
       styleSrc: ["'self'", "'unsafe-inline'"],
@@ -83,6 +84,7 @@ app.get('/api/health', async (req, res) => {
 // API routes
 app.use('/api/forms', require('./api/routes/forms'));
 app.use('/api/embed', require('./api/routes/embed'));
+app.use('/api/responses', require('./api/routes/responses'));
 // app.use('/api/auth', require('./api/routes/auth')); // TODO: Add authentication
 
 // Serve embed.js for external sites
@@ -95,6 +97,11 @@ app.get('/embed.js', (req, res) => {
       // TODO: Implement embed functionality
     })();
   `);
+});
+
+// Public form viewer route
+app.get('/view/:formId', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public-viewer.html'));
 });
 
 // Catch-all route for frontend (for any future SPA routing)
