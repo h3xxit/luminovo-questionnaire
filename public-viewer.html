@@ -1,568 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Video Form</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
-            color: #1e293b;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .form-header {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        .form-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 12px;
-        }
-
-        .form-description {
-            font-size: 1.125rem;
-            color: #64748b;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .video-container {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-
-        #player {
-            width: 100%;
-            max-width: 800px;
-            height: 450px;
-            border-radius: 8px;
-        }
-
-        .timeline-container {
-            margin-top: 20px;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: 8px;
-        }
-
-        .timeline-track {
-            position: relative;
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 4px;
-            cursor: pointer;
-            margin: 16px 0;
-        }
-
-        .timeline-progress {
-            height: 100%;
-            background: #3b82f6;
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        .timeline-marker {
-            position: absolute;
-            top: -6px;
-            width: 20px;
-            height: 20px;
-            background: #ef4444;
-            border: 3px solid white;
-            border-radius: 50%;
-            cursor: pointer;
-            transform: translateX(-50%);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 10;
-        }
-
-        .timeline-marker.completed {
-            background: #22c55e;
-        }
-
-        .timeline-marker:hover {
-            transform: translateX(-50%) scale(1.2);
-        }
-
-        .timeline-labels {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 8px;
-        }
-
-        .video-controls {
-            margin-top: 16px;
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: #f1f5f9;
-            color: #475569;
-            border: 1px solid #e2e8f0;
-        }
-
-        .btn-secondary:hover {
-            background: #e2e8f0;
-        }
-
-        .questions-info {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 16px;
-            text-align: left;
-        }
-
-        .questions-info h4 {
-            color: #1e40af;
-            margin-bottom: 8px;
-        }
-
-        .question-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .question-content {
-            background: white;
-            border-radius: 16px;
-            padding: 32px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .question-content h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 20px;
-        }
-
-        #ratingContainer {
-            margin-bottom: 20px;
-        }
-
-        .rating-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-            gap: 16px;
-        }
-
-        .rating-header-row {
-            font-weight: 600;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
-            margin-bottom: 16px;
-        }
-
-        .rating-label {
-            flex: 1;
-            text-align: left;
-        }
-
-        .rating-option {
-            flex: 1;
-            text-align: center;
-        }
-
-        .scale-row {
-            margin: 20px 0;
-        }
-
-        .scale-labels {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 14px;
-            color: #64748b;
-        }
-
-        .scale-options {
-            display: flex;
-            justify-content: space-between;
-            gap: 8px;
-        }
-
-        .scale-option {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-        }
-
-        .scale-option input {
-            margin-bottom: 4px;
-        }
-
-        .choice-container {
-            margin: 16px 0;
-        }
-
-        .choice-row {
-            margin-bottom: 8px;
-        }
-
-        .choice-option {
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: background 0.2s;
-        }
-
-        .choice-option:hover {
-            background: #f8fafc;
-        }
-
-        .choice-option input {
-            margin-right: 8px;
-        }
-
-        .question-input {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 16px;
-            margin-bottom: 20px;
-            transition: border-color 0.2s;
-        }
-
-        .question-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .question-options {
-            margin-bottom: 20px;
-        }
-
-        .option-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .option-item:hover {
-            background: #f8fafc;
-        }
-
-        .option-item input {
-            margin-right: 12px;
-        }
-
-        .question-actions {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 60px 20px;
-            color: #64748b;
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #f1f5f9;
-            border-top: 4px solid #3b82f6;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .error {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-            color: #dc2626;
-            padding: 16px;
-            border-radius: 8px;
-            margin: 20px 0;
-        }
-
-        .success {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #16a34a;
-            padding: 16px;
-            border-radius: 8px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .timeline-preview {
-            background: #f8fafc;
-            border-radius: 8px;
-            padding: 16px;
-            margin-top: 16px;
-        }
-
-        .timeline-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .timeline-item:last-child {
-            border-bottom: none;
-        }
-
-        .timeline-time {
-            background: #3b82f6;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-            margin-right: 12px;
-            min-width: 50px;
-            text-align: center;
-        }
-
-        .timeline-question {
-            flex: 1;
-            font-size: 14px;
-            color: #475569;
-        }
-    </style>
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Video Forms Experience</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
-    <div class="container">
-        <div id="loadingState" class="loading">
-            <div class="loading-spinner"></div>
-            <h3>Loading interactive form...</h3>
-            <p>Please wait while we prepare your experience</p>
-        </div>
-
-        <div id="formContent" style="display: none;">
-            <div class="form-header">
-                <h1 class="form-title" id="formTitle">Loading...</h1>
-                <p class="form-description" id="formDescription"></p>
-            </div>
-
-            <div class="video-container">
-                <div id="player"></div>
-                
-                <div class="timeline-container" id="timelineContainer" style="display: none;">
+    <div class="app-container">
+        <main class="video-section">
+            <div class="video-inner">
+                <p class="video-instruction">Please watch the video on this website and answer the questions that pop up</p>
+                <div class="video-wrapper">
+                    <div id="player"></div>
+                </div>
+                <div class="timeline-container">
                     <div class="timeline-track" id="timelineTrack">
                         <div class="timeline-progress" id="timelineProgress"></div>
-                        <div id="timelineMarkers"></div>
                     </div>
                     <div class="timeline-labels">
-                        <span id="timelineWatchedLabel">0:00 watched</span>
-                        <span id="timelineQuestionsLabel">0/0 questions answered</span>
+                        <span id="timelineWatchedLabel">Watched: 0:00</span>
+                        <span id="timelineQuestionsLabel">Questions: 0 / 0</span>
                     </div>
                 </div>
+            </div>
+        </main>
 
-                <div class="questions-info" id="questionsInfo" style="display: none;">
-                    <h4>📋 Interactive Video Experience</h4>
-                    <p>This video contains <span id="questionCount">0</span> interactive questions that will appear automatically at specific times.</p>
-                    <p>The video will pause when questions appear. Answer them to continue watching.</p>
+        <aside id="formOverlay" class="form-overlay hidden">
+            <div class="glass-panel">
+                <div class="form-header">
+                    <h2>Quick Question</h2>
+                    <p>Please answer to continue watching</p>
                 </div>
+                <div id="ratingContainer" class="rating-container"></div>
+                <div class="question-container">
+                    <p id="questionText" class="question-text">Please answer this question:</p>
+                    <textarea id="answerInput" class="question-input" rows="4" placeholder="Type your answer here..."></textarea>
+                </div>
+                <p class="form-reminder">Your answer will be submitted securely. After submitting, the video will continue.</p>
+                <button id="submitAnswerBtn" class="primary-btn">
+                    <span>Submit Answer &amp; Continue</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
             </div>
-        </div>
-
-        <div id="errorState" style="display: none;">
-            <div class="error">
-                <h3>Form Not Found</h3>
-                <p>The form you're looking for doesn't exist or hasn't been published yet.</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Question Overlay -->
-    <div id="formOverlay" class="question-overlay">
-        <div class="question-content">
-            <h3 id="questionText">Question</h3>
-            <div id="ratingContainer"></div>
-            <textarea id="answerInput" class="question-input" placeholder="Your answer..." rows="3" style="display: none;"></textarea>
-            <div class="question-actions">
-                <button class="btn btn-secondary" onclick="skipQuestion()">Skip</button>
-                <button class="btn btn-primary" id="submitAnswerBtn" onclick="submitAnswer()">Submit</button>
-            </div>
-        </div>
+        </aside>
     </div>
 
     <script>
-        // Load YouTube IFrame API
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-        let player;
-        let currentForm = null;
-        let questions = [];
-        let activeCheckpoints = new Set();
-        let currentCheckpointIndex = 0;
-        let timeCheckInterval;
-        let duration = 0;
-        let timelineMarkers = [];
-        let collectedAnswers = [];
-        let sessionId = 'session_' + Date.now();
-
-        const formOverlay = document.getElementById('formOverlay');
-        const timelineTrack = document.getElementById('timelineTrack');
-        const timelineProgress = document.getElementById('timelineProgress');
-        const timelineWatchedLabel = document.getElementById('timelineWatchedLabel');
-        const timelineQuestionsLabel = document.getElementById('timelineQuestionsLabel');
-        const ratingContainer = document.getElementById('ratingContainer');
-        const questionTextEl = document.getElementById('questionText');
-        const answerInputEl = document.getElementById('answerInput');
-        const submitAnswerBtn = document.getElementById('submitAnswerBtn');
-
-        // Get form ID from URL
+        // Get form ID from URL and load form data
         const pathParts = window.location.pathname.split('/');
         const formId = pathParts[pathParts.length - 1];
 
-        // Load form on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            if (formId && formId !== 'view') {
-                loadForm(formId);
-            } else {
-                showError('Invalid form URL');
-            }
-        });
-
-        // YouTube API ready callback
-        function onYouTubeIframeAPIReady() {
-            // Will be called after form is loaded
-        }
-
-        async function loadForm(formId) {
+        // Load form data and create config
+        async function loadFormConfig() {
             try {
                 const response = await fetch(`/api/forms/${formId}`);
-                
-                if (!response.ok) {
-                    throw new Error('Form not found');
-                }
-
                 const data = await response.json();
                 
-                if (!data.form) {
-                    throw new Error('Form data not available');
+                if (!data.success || !data.form.is_published) {
+                    throw new Error('Form not found or not published');
                 }
 
-                if (!data.form.is_published) {
-                    throw new Error('This form is not published yet');
-                }
+                // Create videoConfig in the same format as config.js
+                window.videoConfig = {
+                    videoId: extractVideoId(data.form.youtube_video_id),
+                    checkpoints: (data.form.questions || []).map(q => ({
+                        id: q.id,
+                        timestamp: q.timestamp_seconds,
+                        type: q.question_type,
+                        question: q.question_data.question || '',
+                        options: q.question_data.options || [],
+                        required: q.question_data.required || false
+                    }))
+                };
 
-                currentForm = data.form;
-                questions = (data.form.questions || []).map(q => ({
-                    id: q.id,
-                    timestamp: q.timestamp_seconds,
-                    type: q.question_type,
-                    question: q.question_data.question || '',
-                    options: q.question_data.options || [],
-                    required: q.question_data.required || false
-                }));
-                
-                // Sort questions by timestamp
-                questions.sort((a, b) => a.timestamp - b.timestamp);
-                
-                displayForm();
-                
+                // Sort checkpoints by timestamp
+                window.videoConfig.checkpoints.sort((a, b) => a.timestamp - b.timestamp);
+
+                // Load script.js after config is ready
+                const scriptTag = document.createElement('script');
+                scriptTag.src = '/script.js';
+                document.head.appendChild(scriptTag);
+
             } catch (error) {
                 console.error('Error loading form:', error);
-                showError(error.message);
+                document.body.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: var(--bg-color); color: var(--text-color); text-align: center;">
+                        <div>
+                            <h2>Form Not Available</h2>
+                            <p>This form could not be loaded or is not published.</p>
+                        </div>
+                    </div>
+                `;
             }
-        }
-
-        function displayForm() {
-            // Update form info
-            document.getElementById('formTitle').textContent = currentForm.title;
-            document.getElementById('formDescription').textContent = currentForm.description || '';
-
-            // Show questions info
-            if (questions.length > 0) {
-                document.getElementById('questionCount').textContent = questions.length;
-                document.getElementById('questionsInfo').style.display = 'block';
-            }
-
-            // Initialize YouTube player
-            const videoId = extractVideoId(currentForm.youtube_video_id);
-            initializePlayer(videoId);
-
-            // Show form content
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('formContent').style.display = 'block';
         }
 
         function extractVideoId(input) {
@@ -573,351 +112,9 @@
             return match ? match[1] : input;
         }
 
-        function initializePlayer(videoId) {
-            player = new YT.Player('player', {
-                height: '100%',
-                width: '100%',
-                videoId: videoId,
-                host: 'https://www.youtube-nocookie.com',
-                playerVars: {
-                    'playsinline': 1,
-                    'controls': 1,
-                    'fs': 0,
-                    'rel': 0,
-                    'disablekb': 1,
-                    'modestbranding': 1,
-                    'origin': window.location.origin
-                },
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange,
-                    'onError': onPlayerError
-                }
-            });
-        }
-
-        function onPlayerReady(event) {
-            duration = player.getDuration();
-            startMonitoring();
-            setupTimeline();
-            
-            // Show timeline
-            document.getElementById('timelineContainer').style.display = 'block';
-        }
-
-        function onPlayerError(event) {
-            console.error("YouTube Player Error:", event.data);
-            if (event.data === 150 || event.data === 101 || event.data === 153) {
-                showError("This video cannot be played in an embedded player. The video owner has restricted it.");
-            } else {
-                showError("An error occurred with the video player. Error code: " + event.data);
-            }
-        }
-
-        function onPlayerStateChange(event) {
-            if (event.data == YT.PlayerState.PLAYING) {
-                startMonitoring();
-            } else {
-                stopMonitoring();
-            }
-        }
-
-        function startMonitoring() {
-            stopMonitoring();
-            timeCheckInterval = setInterval(checkTime, 500);
-        }
-
-        function stopMonitoring() {
-            if (timeCheckInterval) {
-                clearInterval(timeCheckInterval);
-                timeCheckInterval = null;
-            }
-        }
-
-        function checkTime() {
-            if (!player || !player.getCurrentTime || !questions) return;
-
-            const currentTime = player.getCurrentTime();
-            if (duration && timelineProgress) {
-                const pct = Math.min(100, (currentTime / duration) * 100);
-                timelineProgress.style.width = pct + '%';
-            }
-
-            updateTimelineLabels(currentTime);
-            const nextQuestion = questions[currentCheckpointIndex];
-
-            // Check if we passed the question timestamp
-            if (nextQuestion && currentTime >= nextQuestion.timestamp && !activeCheckpoints.has(currentCheckpointIndex)) {
-                triggerQuestion(nextQuestion, currentCheckpointIndex);
-            }
-        }
-
-        function triggerQuestion(question, index) {
-            player.pauseVideo();
-            activeCheckpoints.add(index);
-            currentCheckpointIndex++;
-
-            if (timelineMarkers[index]) {
-                timelineMarkers[index].classList.add('completed');
-            }
-
-            updateTimelineLabels(player.getCurrentTime());
-            showQuestion(question);
-        }
-
-        function setupTimeline() {
-            const markersContainer = document.getElementById('timelineMarkers');
-            if (!markersContainer || !duration) return;
-
-            timelineMarkers = [];
-            markersContainer.innerHTML = '';
-
-            questions.forEach((question, index) => {
-                const percentage = (question.timestamp / duration) * 100;
-                const marker = document.createElement('div');
-                marker.className = 'timeline-marker';
-                marker.style.left = percentage + '%';
-                marker.title = `Question at ${formatTime(question.timestamp)}: ${question.question}`;
-                marker.onclick = () => {
-                    if (player && player.seekTo) {
-                        player.seekTo(question.timestamp);
-                    }
-                };
-                markersContainer.appendChild(marker);
-                timelineMarkers.push(marker);
-            });
-        }
-
-        function updateTimelineLabels(currentTime) {
-            if (timelineWatchedLabel) {
-                timelineWatchedLabel.textContent = `${formatTime(currentTime)} watched`;
-            }
-            if (timelineQuestionsLabel) {
-                const answered = activeCheckpoints.size;
-                timelineQuestionsLabel.textContent = `${answered}/${questions.length} questions answered`;
-            }
-        }
-
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return `${mins}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        function showQuestion(question) {
-            // Clear previous question UI
-            if (answerInputEl) {
-                answerInputEl.value = '';
-                answerInputEl.style.display = 'none';
-            }
-            if (ratingContainer) {
-                ratingContainer.innerHTML = '';
-            }
-            if (questionTextEl) {
-                questionTextEl.style.display = 'block';
-            }
-
-            // Set question text
-            if (questionTextEl) {
-                questionTextEl.textContent = question.question || 'Question';
-            }
-
-            // Build UI based on question type
-            switch (question.type) {
-                case 'short_answer':
-                case 'paragraph':
-                    if (answerInputEl) {
-                        answerInputEl.style.display = 'block';
-                        answerInputEl.rows = question.type === 'paragraph' ? 4 : 2;
-                    }
-                    break;
-
-                case 'multiple_choice':
-                    buildChoiceQuestion(question, 'radio');
-                    break;
-
-                case 'checkboxes':
-                    buildChoiceQuestion(question, 'checkbox');
-                    break;
-
-                case 'linear_scale':
-                    buildScaleQuestion(question);
-                    break;
-
-                case 'rating':
-                    buildRatingQuestion(question);
-                    break;
-
-                default:
-                    if (answerInputEl) {
-                        answerInputEl.style.display = 'block';
-                    }
-            }
-
-            // Show overlay
-            if (formOverlay) {
-                formOverlay.style.display = 'flex';
-            }
-        }
-
-        function buildChoiceQuestion(question, inputType) {
-            if (!ratingContainer) return;
-
-            const choiceContainer = document.createElement('div');
-            choiceContainer.className = 'choice-container';
-            
-            const name = `choice_${question.id}`;
-            if (Array.isArray(question.options)) {
-                question.options.forEach((option, index) => {
-                    const choiceRow = document.createElement('div');
-                    choiceRow.className = 'choice-row';
-                    choiceRow.innerHTML = `
-                        <label class="choice-option">
-                            <input type="${inputType}" name="${name}" value="${option}">
-                            <span>${option}</span>
-                        </label>
-                    `;
-                    choiceContainer.appendChild(choiceRow);
-                });
-            }
-            ratingContainer.appendChild(choiceContainer);
-
-            // Hide text input
-            if (questionTextEl) {
-                questionTextEl.style.display = 'block';
-            }
-        }
-
-        function buildScaleQuestion(question) {
-            if (!ratingContainer) return;
-
-            const scaleRow = document.createElement('div');
-            scaleRow.className = 'scale-row';
-            
-            const name = `scale_${question.id}`;
-            scaleRow.innerHTML = `
-                <div class="scale-labels">
-                    <span>1 - Not Important</span>
-                    <span>5 - Very Important</span>
-                </div>
-                <div class="scale-options">
-                    <label class="scale-option"><input type="radio" name="${name}" value="1"><span>1</span></label>
-                    <label class="scale-option"><input type="radio" name="${name}" value="2"><span>2</span></label>
-                    <label class="scale-option"><input type="radio" name="${name}" value="3"><span>3</span></label>
-                    <label class="scale-option"><input type="radio" name="${name}" value="4"><span>4</span></label>
-                    <label class="scale-option"><input type="radio" name="${name}" value="5"><span>5</span></label>
-                </div>
-            `;
-            ratingContainer.appendChild(scaleRow);
-        }
-
-        function buildRatingQuestion(question) {
-            if (!ratingContainer) return;
-
-            const ratingRow = document.createElement('div');
-            ratingRow.className = 'scale-row';
-            
-            const name = `rating_${question.id}`;
-            ratingRow.innerHTML = `
-                <div class="scale-labels">
-                    <span>⭐ Rating</span>
-                </div>
-                <div class="scale-options">
-                    <label class="scale-option"><input type="radio" name="${name}" value="1"><span>⭐</span></label>
-                    <label class="scale-option"><input type="radio" name="${name}" value="2"><span>⭐⭐</span></label>
-                    <label class="scale-option"><input type="radio" name="${name}" value="3"><span>⭐⭐⭐</span></label>
-                    <label class="scale-option"><input type="radio" name="${name}" value="4"><span>⭐⭐⭐⭐</span></label>
-                    <label class="scale-option"><input type="radio" name="${name}" value="5"><span>⭐⭐⭐⭐⭐</span></label>
-                </div>
-            `;
-            ratingContainer.appendChild(ratingRow);
-        }
-
-        async function submitAnswer() {
-            const overlay = formOverlay;
-            if (!overlay) return;
-
-            const inputs = overlay.querySelectorAll('input, textarea');
-            let answer = '';
-            const selectedAnswers = [];
-            
-            inputs.forEach(input => {
-                if (input.type === 'radio' && input.checked) {
-                    answer = input.value;
-                } else if (input.type === 'checkbox' && input.checked) {
-                    selectedAnswers.push(input.value);
-                } else if (input.type !== 'radio' && input.type !== 'checkbox' && input.value) {
-                    answer = input.value;
-                }
-            });
-            
-            if (selectedAnswers.length > 0) {
-                answer = selectedAnswers.join(', ');
-            }
-
-            const currentQuestion = questions[currentCheckpointIndex - 1];
-            if (!currentQuestion) return;
-
-            try {
-                // Save response to database
-                console.log('Saving response:', { questionId: currentQuestion.id, answer, sessionId });
-                
-                const response = await fetch(`/api/responses`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        form_id: currentForm.id,
-                        question_id: currentQuestion.id,
-                        session_id: sessionId,
-                        answer_data: { answer: answer },
-                        video_timestamp: player && player.getCurrentTime ? Math.floor(player.getCurrentTime()) : currentQuestion.timestamp
-                    })
-                });
-
-                const result = await response.json();
-                console.log('Response saved:', result);
-
-                if (!result.success) {
-                    console.error('Failed to save response:', result.error);
-                }
-
-            } catch (error) {
-                console.error('Error saving response:', error);
-                // Continue anyway - don't block the user experience
-            }
-
-            // Save locally as backup
-            collectedAnswers.push({
-                questionId: currentQuestion.id,
-                answer: answer,
-                timestamp: Date.now()
-            });
-
-            // Hide overlay
-            overlay.style.display = 'none';
-
-            // Resume video
-            if (player && player.playVideo) {
-                player.playVideo();
-            }
-        }
-
-        function skipQuestion() {
-            if (formOverlay) {
-                formOverlay.style.display = 'none';
-            }
-            
-            // Resume video
-            if (player && player.playVideo) {
-                player.playVideo();
-            }
-        }
-
-        function showError(message) {
-            document.getElementById('loadingState').style.display = 'none';
-            document.getElementById('errorState').style.display = 'block';
-            document.querySelector('.error p').textContent = message;
-        }
+        // Load form config on page load
+        document.addEventListener('DOMContentLoaded', loadFormConfig);
     </script>
 </body>
+
 </html>

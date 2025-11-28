@@ -430,29 +430,21 @@
             if (!currentVideoId) return alert('Please add a YouTube video first');
             if (questions.length === 0) return alert('Please add at least one question');
 
-            console.log('Starting form creation...', { title, currentVideoId, questionsCount: questions.length });
-
             try {
                 // Create form
-                console.log('Creating form...');
                 const formResponse = await fetch('/api/forms', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ title, youtube_video_id: currentVideoId, is_published: true })
                 });
                 
-                console.log('Form response status:', formResponse.status);
                 const formResult = await formResponse.json();
-                console.log('Form result:', formResult);
-                
                 if (!formResult.success) throw new Error(formResult.error);
                 currentForm = formResult.form;
-                console.log('Form created with ID:', currentForm.id);
 
                 // Save questions
-                console.log('Saving questions...');
                 for (const question of questions) {
-                    const questionResponse = await fetch(`/api/forms/${currentForm.id}/questions`, {
+                    await fetch(`/api/forms/${currentForm.id}/questions`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -462,20 +454,15 @@
                             display_order: questions.indexOf(question)
                         })
                     });
-                    const questionResult = await questionResponse.json();
-                    console.log('Question saved:', questionResult);
                 }
 
                 // Show share link
                 const shareLink = `${window.location.origin}/view/${currentForm.id}`;
-                console.log('Generated share link:', shareLink);
-                
                 document.getElementById('shareLink').value = shareLink;
                 document.getElementById('shareSection').style.display = 'block';
                 alert('Form published successfully! Link: ' + shareLink);
 
             } catch (error) {
-                console.error('Error details:', error);
                 alert('Error: ' + error.message);
             }
         }

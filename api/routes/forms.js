@@ -31,8 +31,19 @@ router.get('/:id', async (req, res) => {
       .eq('id', id)
       .single();
 
-    if (formError) throw formError;
-    if (!form) return res.status(404).json({ error: 'Form not found' });
+    if (formError) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Form not found' 
+      });
+    }
+    
+    if (!form) {
+      return res.status(404).json({ 
+        success: false, 
+        error: 'Form not found' 
+      });
+    }
 
     // Get questions for this form
     const { data: questions, error: questionsError } = await supabase
@@ -41,9 +52,12 @@ router.get('/:id', async (req, res) => {
       .eq('form_id', id)
       .order('timestamp_seconds', { ascending: true });
 
-    if (questionsError) throw questionsError;
+    if (questionsError) {
+      console.error('Questions query error:', questionsError);
+    }
 
     res.json({
+      success: true,
       form: {
         ...form,
         questions: questions || []
@@ -51,7 +65,10 @@ router.get('/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('Get form error:', error);
-    res.status(500).json({ error: 'Failed to fetch form' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch form' 
+    });
   }
 });
 
