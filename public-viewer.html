@@ -63,8 +63,13 @@
         // Load form data and create config
         async function loadFormConfig() {
             try {
+                console.log('Fetching form with ID:', formId);
                 const response = await fetch(`/api/forms/${formId}`);
                 const data = await response.json();
+                
+                console.log('API Response:', data);
+                console.log('Form data:', data.form);
+                console.log('Questions from DB:', data.form?.questions);
                 
                 if (!data.success || !data.form.is_published) {
                     throw new Error('Form not found or not published');
@@ -73,23 +78,46 @@
                 // Create videoConfig in the same format as config.js
                 window.videoConfig = {
                     videoId: extractVideoId(data.form.youtube_video_id),
-                    checkpoints: (data.form.questions || []).map(q => ({
-                        id: q.id,
-                        timestamp: q.timestamp_seconds,
-                        type: q.question_type,
-                        question: q.question_data.question || '',
-                        options: q.question_data.options || [],
-                        required: q.question_data.required || false
-                    }))
+                    checkpoints: (data.form.questions || []).map(q => {
+                        console.log('Processing question:', q);
+                        return {
+                            id: q.id,
+                            timestamp: q.timestamp_seconds,
+                            type: mapQuestionType(q.question_type),
+                            question: q.question_data.question || '',
+                            options: q.question_data.options || [],
+                            required: q.question_data.required || false
+                        };
+                    })
                 };
 
                 // Sort checkpoints by timestamp
                 window.videoConfig.checkpoints.sort((a, b) => a.timestamp - b.timestamp);
 
-                // Load script.js after config is ready
-                const scriptTag = document.createElement('script');
-                scriptTag.src = '/script.js';
-                document.head.appendChild(scriptTag);
+                console.log('VideoConfig created:', window.videoConfig);
+
+                // Load YouTube API first
+                if (!window.YT) {
+                    const tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    tag.onload = function() {
+                        console.log('YouTube API loaded');
+                        loadVideoScript();
+                    };
+                    document.head.appendChild(tag);
+                } else {
+                    loadVideoScript();
+                }
+
+                function loadVideoScript() {
+                    // Load script-db.js after YouTube API is ready
+                    const scriptTag = document.createElement('script');
+                    scriptTag.src = '/script-db.js';
+                    scriptTag.onload = function() {
+                        console.log('Script-db.js loaded');
+                    };
+                    document.head.appendChild(scriptTag);
+                }
 
             } catch (error) {
                 console.error('Error loading form:', error);
@@ -110,6 +138,19 @@
             }
             const match = input.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
             return match ? match[1] : input;
+        }
+
+        function mapQuestionType(dbType) {
+            // Map database question types to script.js expected types
+            const typeMapping = {
+                'multiple_choice': 'single_choice',
+                'checkboxes': 'multiple_choice', 
+                'linear_scale': 'scale_1_to_5',
+                'rating': 'rating_block',
+                'short_answer': 'text',
+                'paragraph': 'text'
+            };
+            return typeMapping[dbType] || 'text';
         }
 
         // Load form config on page load

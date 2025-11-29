@@ -14,11 +14,11 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.youtube.com", "https://s.ytimg.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://www.youtube.com", "https://s.ytimg.com", "https://cdn.jsdelivr.net"],
       scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
       frameSrc: ["'self'", "https://www.youtube.com", "https://www.youtube-nocookie.com"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "https://www.youtube.com"]
+      connectSrc: ["'self'", "https://www.youtube.com", "https://api.ipify.org"]
     }
   }
 }));
